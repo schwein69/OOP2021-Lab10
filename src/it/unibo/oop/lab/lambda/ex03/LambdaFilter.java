@@ -6,7 +6,10 @@ import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.LayoutManager;
 import java.awt.Toolkit;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -35,8 +38,18 @@ public final class LambdaFilter extends JFrame {
     private static final long serialVersionUID = 1760990730218643730L;
 
     private enum Command {
-        IDENTITY("No modifications", Function.identity());
-
+        IDENTITY("No modifications", Function.identity()),
+        LOWER("lowercase", s -> s.toLowerCase()),
+        NC("number of chars", s -> Integer.toString(s.length())),
+        NL("number of lines", s -> Integer.toString((int) s.lines().count())),
+        LIST("list in alphabetical order", s -> Arrays.stream(s.split("\\n|,|\\.|-|:")).sorted().collect(Collectors.joining(" "))),
+        WC("each word", s -> Arrays.stream(s.split("\\n|,|\\.|-|:")).sorted()
+                .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()))
+                .entrySet().stream().map(a -> a.getKey() + "->" + a.getValue()).collect(Collectors.joining("\n"))),
+        WC1("each word version two", s -> Arrays.stream(s.split("\\n|,|\\.|-|:"))
+                .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()))
+                .entrySet().stream().sorted(Comparator.comparing(java.util.Map.Entry::getKey))
+                .map(s1 -> s1.getKey() + "->" + s1.getValue()).collect(Collectors.joining("\n")));
         private final String commandName;
         private final Function<String, String> fun;
 
